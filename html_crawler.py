@@ -626,6 +626,22 @@ def remove_disaggregation_notes(soup):
         if "Includes disaggregation" in p.get_text():
             p.decompose()
 
+
+def remove_contact_info(soup):
+    """Remove the complete Contact Info block from the published project page."""
+    for heading in soup.find_all(["h2", "h3", "h4"]):
+        if heading.get_text(" ", strip=True).casefold() != "contact info":
+            continue
+
+        container = heading.parent
+        contact_list = heading.find_next_sibling("ul")
+        if contact_list:
+            contact_list.decompose()
+        heading.decompose()
+        if container.name == "div" and not container.get_text(strip=True) and not container.find(True):
+            container.decompose()
+
+
 def remove_meta_noise(soup):
     for meta in soup.find_all("meta"):
         if meta.get("http-equiv") in ["Cache-Control", "Pragma", "Expires"]:
@@ -1001,6 +1017,7 @@ def clean_html(soup):
     # --- clean up --
     # Remove disaggregation only if not applicable
     remove_disaggregation_notes(soup)
+    remove_contact_info(soup)
     remove_translate_attr(soup)
     remove_empty_tags(soup)
     normalize_locations(soup)
